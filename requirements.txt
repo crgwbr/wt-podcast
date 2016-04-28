@@ -1,0 +1,8 @@
+dateutils==0.6.6
+feedgen==0.3.2
+lxml==3.6.0
+pydub==0.16.4
+python-dateutil==2.5.3
+pytz==2016.4
+PyYAML==3.11
+requests==2.9.1
