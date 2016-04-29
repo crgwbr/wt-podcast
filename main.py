@@ -122,10 +122,8 @@ class Article(object):
 
     @property
     def audio(self):
-        if not self._audio:
-            self._download()
-            self._audio = AudioSegment.from_file(self.local, format=FORMAT)
-        return self._audio
+        self.download()
+        return AudioSegment.from_file(self.local, format=FORMAT)
 
     @property
     def mnemonic(self):
@@ -150,7 +148,7 @@ class Article(object):
     def _parse_guid(self):
         return re.match('^(?P<mne>[a-z]+)_(?P<lang>[A-Z]+)_(?P<issue>\d{6,8})_(?P<track>[\d]+)', self.guid)
 
-    def _download(self):
+    def download(self):
         if os.path.exists(self.local):
             return
         with open(self.local, 'wb') as cache:
@@ -195,6 +193,9 @@ class Issue(object):
         if manifest.get_issue_hash(self) == self.hash:
             print('Combined audio already exists')
             return
+
+        for article in self.articles:
+            article.download()
 
         combined = AudioSegment.empty()
         for article in self.articles:
