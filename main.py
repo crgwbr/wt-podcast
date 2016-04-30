@@ -27,6 +27,10 @@ class Manifest(object):
         manifest = self._load()
         return manifest.get(issue.lang, {}).get(issue.mnemonic, {}).get(issue.issue_date, {}).get('hash')
 
+    def get_article_count(self, issue):
+        manifest = self._load()
+        return len( manifest.get(issue.lang, {}).get(issue.mnemonic, {}).get(issue.issue_date, {}).get('articles', []) )
+
     def save_issue(self, issue, audio):
         manifest = self._load()
         if issue.lang not in manifest:
@@ -56,7 +60,7 @@ class Manifest(object):
                             os.unlink(f)
                         except FileNotFoundError:
                             pass
-                    data['articles'] = []
+
                     if data['created_on'] <= stale_threshold:
                         stale_issues.append(issue)
                 for issue in stale_issues:
@@ -191,7 +195,11 @@ class Issue(object):
 
     def create_combined_audio(self, manifest):
         if manifest.get_issue_hash(self) == self.hash:
-            print('Combined audio already exists')
+            print("%s: Combined audio already exists" % self)
+            return
+
+        if len(self.articles) < manifest.get_article_count(self):
+            print("%s: Feed has fewer articles (%s) then preexisting combined audio (%s)." % (self, len(self.articles), manifest.get_article_count(self)))
             return
 
         for article in self.articles:
@@ -199,13 +207,13 @@ class Issue(object):
 
         combined = AudioSegment.empty()
         for article in self.articles:
-            print("Found %s with length of %s seconds" % (article, article.audio.duration_seconds))
+            print("%s: Found %s with length of %s seconds" % (self, article, article.audio.duration_seconds))
             combined += article.audio
 
         combined.export(self.local, format=FORMAT)
         manifest.save_issue(self, combined)
-        print("Created combined audio with length of %s seconds" % combined.duration_seconds)
-        print("Saved to %s" % self.local)
+        print("%s: Created combined audio with length of %s seconds" % (self, combined.duration_seconds))
+        print("%s: Saved to %s" % (self, self.local))
 
     def __str__(self):
         return "<Issue mnemonic='%s' date='%s' length='%d'>" % (self.mnemonic, self.issue_date, len(self.articles))
