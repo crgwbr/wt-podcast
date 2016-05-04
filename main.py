@@ -95,7 +95,7 @@ class Manifest(object):
             fe.published( pytz.utc.localize( entry['created_on'] ) )
             url = "%s/%s" % (URL_BASE, os.path.basename(entry['file']))
             mime = 'audio/mpeg'
-            fe.enclosure(url, 0, mime)
+            fe.enclosure(url, str(entry['duration']), mime)
             fe.link(href=url, type=mime)
         fg.rss_str(pretty=True)
         fg.rss_file(os.path.join(CACHE_DIR, output))
