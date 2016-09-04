@@ -210,7 +210,7 @@ class Issue(object):
             print("%s: Found %s with length of %s seconds" % (self, article, article.audio.duration_seconds))
             combined += article.audio
 
-        combined.export(self.local, format=FORMAT)
+        combined.export(self.local, format=FORMAT, bitrate="128k")
         manifest.save_issue(self, combined)
         print("%s: Created combined audio with length of %s seconds" % (self, combined.duration_seconds))
         print("%s: Saved to %s" % (self, self.local))
