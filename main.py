@@ -17,9 +17,17 @@ MNEMONICS = ('g', 'w', 'wp', )
 LANGUAGES = ('E', )
 FORMAT = 'mp3'
 
-CACHE_DIR = os.path.join(os.path.dirname(__file__), '_cache')
-MANIFEST = os.path.join(CACHE_DIR, '_manifest.yml')
-URL_BASE = 'https://crgwbr.com/jworg-magazines'
+CACHE_DIR = os.environ.get('CACHE_DIR')
+if not CACHE_DIR:
+    CACHE_DIR = os.path.join(os.path.dirname(__file__), '_cache')
+
+MANIFEST = os.environ.get('MANIFEST')
+if not MANIFEST:
+    MANIFEST = os.path.join(CACHE_DIR, '_manifest.yml')
+
+URL_BASE = os.environ.get('URL_BASE')
+if not URL_BASE:
+    URL_BASE = 'https://crgwbr.com/jworg-magazines'
 
 
 class Manifest(object):
@@ -225,7 +233,7 @@ class RSSFeedReader(object):
     def __init__(self, language, mnemonic):
         self.language = language
         self.mnemonic = mnemonic
-        self.url = "https://www.jw.org/apps/E_RSSMEDIAMAG?rln=%s&rmn=%s&rfm=%s" % (language, mnemonic, FORMAT)
+        self.url = "https://apps.jw.org/E_RSSMEDIAMAG?rln=%s&rmn=%s&rfm=%s" % (language, mnemonic, FORMAT)
 
     @property
     def articles(self):
