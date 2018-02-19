@@ -82,8 +82,9 @@ class Manifest(object):
         fg = FeedGenerator()
         fg.load_extension('podcast')
         fg.podcast.itunes_category('Religion & Spirituality', 'Christianity')
+        fg.podcast.itunes_image("%s/icon.png" % URL_BASE)
 
-        fg.title('jw.org Magazines')
+        fg.title('JW.ORG Magazines')
         fg.description('Combined Feed of Watchtower (public), Watchtower (study), and Awake! in English from jw.org.')
         fg.link(href="%s/%s" % (URL_BASE, output), rel='self')
 
