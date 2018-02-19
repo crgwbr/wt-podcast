@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 from feedgen.feed import FeedGenerator
 from pydub import AudioSegment
+import eyed3
 import os
 import os.path
 import hashlib
@@ -211,18 +212,52 @@ class Issue(object):
             print("%s: Feed has fewer articles (%s) then preexisting combined audio (%s)." % (self, len(self.articles), manifest.get_article_count(self)))
             return
 
+        # Download each article's MP3 file
         for article in self.articles:
             article.download()
 
+        # Combine MP3 files into a single file
         combined = AudioSegment.empty()
+        chapters = []
+        _chap_start = 0
+        _chap_end = 0
         for article in self.articles:
             print("%s: Found %s with length of %s seconds" % (self, article, article.audio.duration_seconds))
+            _chap_end = _chap_start + (article.audio.duration_seconds * 1000)
             combined += article.audio
+            chapters.append((article.title, int(_chap_start), int(_chap_end)))
+            _chap_start = _chap_end
 
+        # Export the new combined file
         combined.export(self.local, format=FORMAT, bitrate="128k")
+
+        # Add chapter markers to the combined file
+        id3 = eyed3.load(self.local)
+        print(id3)
+        print(id3.tag)
+        print(id3.tag.chapters)
+        print(id3.tag.images)
+        index = 0
+        child_ids = []
+        for chapter in chapters:
+            element_id = ("chp{}".format(index)).encode()
+            title, start_time, end_time = chapter
+            new_chap = id3.tag.chapters.set(element_id, (start_time, end_time))
+            new_chap.sub_frames.setTextFrame(b"TIT2", "{}".format(title))
+            child_ids.append(element_id)
+            index += 1
+        id3.tag.table_of_contents.set(b"toc", toplevel=True, ordered=True, child_ids=child_ids)
+
+        # Update the manifest with the new info
         manifest.save_issue(self, combined)
         print("%s: Created combined audio with length of %s seconds" % (self, combined.duration_seconds))
         print("%s: Saved to %s" % (self, self.local))
+        print("%s: Chapters:" % self)
+        for chap in id3.tag.chapters:
+            print("%s:  - %s" % (self, chap.sub_frames.get(b"TIT2")[0]._text))
+
+        # Save ID3 tags
+        id3.tag.save()
 
     def __str__(self):
         return "<Issue mnemonic='%s' date='%s' length='%d'>" % (self.mnemonic, self.issue_date, len(self.articles))
