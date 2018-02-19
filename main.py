@@ -231,12 +231,15 @@ class Issue(object):
         # Export the new combined file
         combined.export(self.local, format=FORMAT, bitrate="128k")
 
-        # Add chapter markers to the combined file
+        # Extract the cover image from the first article MP3
+        cover_id3 = eyed3.load(self.articles[0].local)
+        cover_img_frame = cover_id3.tag.images.get('')
+
+        # Set cover image on combined file
         id3 = eyed3.load(self.local)
-        print(id3)
-        print(id3.tag)
-        print(id3.tag.chapters)
-        print(id3.tag.images)
+        id3.tag.images._fs[b'APIC'] = cover_img_frame
+
+        # Add chapter markers to the combined file
         index = 0
         child_ids = []
         for chapter in chapters:
