@@ -113,7 +113,7 @@ class Manifest(object):
     def _load(self):
         try:
             with open(MANIFEST, 'r') as m:
-                manifest = yaml.load(m.read()) or {}
+                manifest = yaml.load(m.read(), Loader=yaml.FullLoader) or {}
         except FileNotFoundError:
             manifest = {}
         return manifest
@@ -160,7 +160,7 @@ class Article(object):
         return self.guid
 
     def _parse_guid(self):
-        return re.match('^(?P<mne>[a-z]+)_(?P<lang>[A-Z]+)_(?P<issue>\d{6,8})_(?P<track>[\d]+)', self.guid)
+        return re.match(r'^(?P<mne>[a-z]+)_(?P<lang>[A-Z]+)_(?P<issue>\d{6,8})_(?P<track>[\d]+)', self.guid)
 
     def download(self):
         if os.path.exists(self.local):
@@ -230,14 +230,14 @@ class Issue(object):
 
         # Export the new combined file
         combined.export(self.local, format=FORMAT, bitrate="128k")
+        id3 = eyed3.load(self.local)
 
         # Extract the cover image from the first article MP3
         cover_id3 = eyed3.load(self.articles[0].local)
-        cover_img_frame = cover_id3.tag.images.get('')
-
-        # Set cover image on combined file
-        id3 = eyed3.load(self.local)
-        id3.tag.images._fs[b'APIC'] = cover_img_frame
+        if cover_id3 is not None:
+            cover_img_frame = cover_id3.tag.images.get('')
+            # Set cover image on combined file
+            id3.tag.images._fs[b'APIC'] = cover_img_frame
 
         # Add chapter markers to the combined file
         index = 0
@@ -277,8 +277,11 @@ class RSSFeedReader(object):
     @property
     def articles(self):
         doc = self._fetch()
+        articles = {}
         for item in doc.findall('channel/item'):
-            yield Article(item)
+            article = Article(item)
+            articles[article.guid] = article
+        return articles.values()
 
     @property
     def issues(self):
