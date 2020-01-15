@@ -227,8 +227,8 @@ secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "cer
 socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
 
 [metadata]
-content-hash = "ef69d802ad11bef06c23df983e83f79c0b7ed429b8bb625822e33cfa560f0872"
-python-versions = "^3.7"
+content-hash = "214c5f5370e95d11ed7acab9eca2380724c4db42453974d803404fbbc483fa68"
+python-versions = "^3.6"
 
 [metadata.files]
 beautifulsoup4 = [
