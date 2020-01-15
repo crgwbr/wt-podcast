@@ -6,7 +6,7 @@ authors = ["Craig Weber <crgwbr@gmail.com>"]
 license = "ISC"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.6"
 eyeD3 = "^0.8.10"
 feedgen = "^0.7.0"
 lxml = "^4.4"
